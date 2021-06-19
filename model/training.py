@@ -4,16 +4,13 @@
 
 
 class training:
-    def __init__(self, first_data, last_data, first_test_data, last_test_data):
+    def __init__(self, nn_name, training_iterations, test_iterations):
+        self.nn_name = nn_name
         self.product = None
-        self.first_data = first_data
-        self.last_data = last_data
-        self.first_test_data = first_test_data
-        self.last_test_data = last_test_data
-        self.training_iterations = last_data - first_data
-        self.test_iterations = last_test_data - first_test_data
-        self.avg_success = None
-        self.avg_error = None
+        self.training_iterations = training_iterations
+        self.test_iterations = test_iterations
+        self.avg_success = None     # success percentage on a classifier
+        self.avg_error = None       # average error on a predictor
     
     def set_product(self, product_name):
         self.product = product_name
@@ -26,11 +23,8 @@ class training:
 
     def to_dict(self):
         return {
+            'nn_name': self.nn_name,
             'product': self.product,
-            'first_data': self.first_data, 
-            'last_data': self.last_data,
-            'first_test_data': self.first_test_data,
-            'last_test_data': self.last_test_data,
             'training_iterations': self.training_iterations,
             'test_iterations': self.test_iterations,
             'avg_success': self.avg_success,

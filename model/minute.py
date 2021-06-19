@@ -43,3 +43,23 @@ class minute:
             'result': float(self.result),
             'valoration': float(self.valoration)
         }
+    
+    def to_list(self):
+        return flatter([
+            self.trends,
+            self.minute_list,
+            self.average_5,
+            self.average_10,
+            self.average_15,
+            self.operation_list,
+            self.operation_rate
+        ])
+
+    def flatter(lst):
+        ret = []
+        for elem in lst:
+            if isinstance(elem, list):
+                ret.extend(flatter(elem))
+            else:
+                ret.append(elem)
+        return ret
