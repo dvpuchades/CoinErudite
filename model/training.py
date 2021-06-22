@@ -9,8 +9,8 @@ class training:
         self.product = None
         self.training_iterations = training_iterations
         self.test_iterations = test_iterations
-        self.avg_success = None     # success percentage on a classifier
-        self.avg_error = None       # average error on a predictor
+        self.avg_success = -1     # success percentage on a classifier
+        self.avg_error = -1       # average error on a predictor
     
     def set_product(self, product_name):
         self.product = product_name
@@ -23,10 +23,10 @@ class training:
 
     def to_dict(self):
         return {
-            'nn_name': self.nn_name,
-            'product': self.product,
-            'training_iterations': self.training_iterations,
-            'test_iterations': self.test_iterations,
-            'avg_success': self.avg_success,
-            'avg_error': self.avg_error
+            'nn_name': str(self.nn_name),
+            'product': str(self.product),
+            'training_iterations': int(self.training_iterations),
+            'test_iterations': int(self.test_iterations),
+            'avg_success': float(self.avg_success),
+            'avg_error': float(self.avg_error)
         }

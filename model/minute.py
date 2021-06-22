@@ -43,6 +43,7 @@ class minute:
             'result': float(self.result),
             'valoration': float(self.valoration)
         }
+
     
     def to_list(self):
         return flatter([
@@ -51,15 +52,21 @@ class minute:
             self.average_5,
             self.average_10,
             self.average_15,
+            self.average,
             self.operation_list,
             self.operation_rate
         ])
 
-    def flatter(lst):
-        ret = []
-        for elem in lst:
-            if isinstance(elem, list):
-                ret.extend(flatter(elem))
-            else:
-                ret.append(elem)
-        return ret
+def flatter(lst):
+    ret = []
+    for elem in lst:
+        if isinstance(elem, list):
+            ret.extend(flatter(elem))
+        else:
+            ret.append(elem)
+    return ret
+
+def from_dict(dict):
+    m = minute(dict['product'], dict['symbol'], dict['trends'], dict['minute_list'], dict['average_5'], dict['average_10'], dict['average_15'], dict['average'], dict['operation_list'])
+    m.set_result(dict['result'])
+    return m

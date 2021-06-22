@@ -3,7 +3,10 @@ import time
 import pymongo
 from pytrends.request import TrendReq
 from pytrends.exceptions import ResponseError
-import model.minute
+from model import minute
+from util import configuration
+
+configuration = configuration.configuration()
 
 
 #funciones auxiliares
@@ -26,14 +29,14 @@ def amount(list):
 
 
 class filler:
-    def __init__(self, binance_api_key, binance_api_secret):
-        self.client = Client(binance_api_key, binance_api_secret)
+    def __init__(self):
+        self.client = Client(configuration.binance_api_key, configuration.binance_api_secret)
         self.pytrends = TrendReq(hl='en-US', tz=360)
         self.product_list = ['ethereum', 'cardano', 'dogecoin', 'polkadot', 'ripple']
         self.symbol_list = ['ETHBUSD', 'ADABUSD', 'DOGEBUSD', 'DOTBUSD', 'XRPBUSD']
 
     def minute_generator(self):
-        mongo_client = pymongo.MongoClient("mongodb://localhost:27017/")
+        mongo_client = pymongo.MongoClient(host=[configuration.mongo_uri])
         db = mongo_client['NN3']
         collection = db['Minutes']
         price_list = [[],[],[],[],[]]
