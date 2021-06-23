@@ -38,7 +38,7 @@ class filler:
     def minute_generator(self):
         mongo_client = pymongo.MongoClient(host=[configuration.mongo_uri])
         db = mongo_client['NN3']
-        collection = db['Minutes']
+        collection = db['Minutes (R)']
         price_list = [[],[],[],[],[]]
         for period in range(15):
             period_time = time.time()
