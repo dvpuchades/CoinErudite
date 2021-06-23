@@ -61,8 +61,8 @@ class filler:
                 average_10 = amount(price_list[i][5:15]) / 10
                 average_15 = amount(price_list[i][:15]) / 15
                 operation_list = []
-                klines = self.client.get_historical_klines(self.symbol_list[i], Client.KLINE_INTERVAL_1MINUTE, "7 minutes ago UTC")
-                for x in range(len(klines) - 5, len(klines)):
+                klines = self.client.get_historical_klines(self.symbol_list[i], Client.KLINE_INTERVAL_1MINUTE, "8 minutes ago UTC")
+                for x in range(len(klines) - 6, len(klines) - 1):
                     operation_list.append(float(klines[x][8]))
                 klines = self.client.get_historical_klines(self.symbol_list[i], Client.KLINE_INTERVAL_1HOUR, "3 hours ago UTC")
                 operation_list.append(float(klines[len(klines)-1][8]))
