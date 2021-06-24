@@ -29,14 +29,16 @@ def amount(list):
 class filler:
     def __init__(self):
         self.client = Client(configuration.binance_api_key, configuration.binance_api_secret)
-        self.product_list = ['ethereum', 'cardano', 'dogecoin', 'polkadot', 'ripple', 'bitcoin', 'binance coin', 'uniswap', 'iota', 'luna']
+        self.product_list = ['ethereum', 'cardano', 'dogecoin', 'polkadot', 'ripple', 'bitcoin', 'binance coin', 'uniswap', 'iota', 'luna coin']
         self.symbol_list = ['ETHBUSD', 'ADABUSD', 'DOGEBUSD', 'DOTBUSD', 'XRPBUSD', 'BTCBUSD', 'BNBBUSD', 'UNIBUSD', 'IOTABUSD', 'LUNABUSD']
 
     def minute_generator(self):
         mongo_client = pymongo.MongoClient(host=[configuration.mongo_uri])
         db = mongo_client['NN3']
         collection = db['Minutes (Ted)']
-        price_list = [[],[],[],[],[]]
+        price_list = []
+        for s in range(len(self.symbol_list)):
+            price_list.append([])
         for period in range(15):
             period_time = time.time()
             for s in range(len(self.symbol_list)):
@@ -47,7 +49,6 @@ class filler:
             init_time = time.time()
             for s in range(len(self.symbol_list)):
                 price_list[s].append(float(self.client.get_symbol_ticker(symbol = self.symbol_list[s])['price']))
-            dataframe = self.pytrends.interest_over_time()
             for i in range(len(self.product_list)):
                 average  = float(self.client.get_avg_price(symbol=self.symbol_list[i])['price'])
                 result = price_list[i][15]
