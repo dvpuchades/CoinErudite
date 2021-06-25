@@ -3,7 +3,7 @@
 # su conocimiento
 
 
-class training:
+class Training:
     def __init__(self, nn_name, training_iterations, test_iterations):
         self.nn_name = nn_name
         self.product = None

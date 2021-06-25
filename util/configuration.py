@@ -1,7 +1,7 @@
 import json
 
 
-class configuration:
+class Configuration:
     def __init__(self):
         self.binance_api_key = ''
         self.binance_api_secret = ''

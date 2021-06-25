@@ -6,7 +6,7 @@ from pytrends.exceptions import ResponseError
 from model import minute
 from util import configuration
 
-configuration = configuration.configuration()
+configuration = configuration.Configuration()
 
 
 #funciones auxiliares
@@ -28,7 +28,7 @@ def amount(list):
 
 
 
-class filler:
+class Filler:
     def __init__(self):
         self.client = Client(configuration.binance_api_key, configuration.binance_api_secret)
         self.pytrends = TrendReq(hl='en-US', tz=360)
@@ -66,7 +66,7 @@ class filler:
                     operation_list.append(float(klines[x][8]))
                 klines = self.client.get_historical_klines(self.symbol_list[i], Client.KLINE_INTERVAL_1HOUR, "3 hours ago UTC")
                 operation_list.append(float(klines[len(klines)-1][8]))
-                m = minute.minute(self.product_list[i], self.symbol_list[i], trends, minute_list, average_5, average_10, average_15, average, operation_list)
+                m = minute.Minute(self.product_list[i], self.symbol_list[i], trends, minute_list, average_5, average_10, average_15, average, operation_list)
                 m.set_result(result)
                 collection.insert_one(m.to_dict()) #insertar en db
                 price_list[i].pop()

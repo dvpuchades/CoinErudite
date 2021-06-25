@@ -1,6 +1,6 @@
 import datetime
 
-class minute:
+class Minute:
     def __init__(self, product, symbol, trends, minute_list, average_5, average_10, average_15, average, operation_list):
         self.date = datetime.datetime.now()
         self.product = product
@@ -67,6 +67,6 @@ def flatter(lst):
     return ret
 
 def from_dict(dict):
-    m = minute(dict['product'], dict['symbol'], dict['trends'], dict['minute_list'], dict['average_5'], dict['average_10'], dict['average_15'], dict['average'], dict['operation_list'])
+    m = Minute(dict['product'], dict['symbol'], dict['trends'], dict['minute_list'], dict['average_5'], dict['average_10'], dict['average_15'], dict['average'], dict['operation_list'])
     m.set_result(dict['result'])
     return m

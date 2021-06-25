@@ -1,6 +1,6 @@
 import datetime
 
-class operation:
+class Operation:
     def __init__(self, product, symbol, buy_price):
         self.date = datetime.datetime.now()
         self.product = product

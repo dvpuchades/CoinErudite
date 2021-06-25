@@ -3,9 +3,9 @@ from model import training
 from model import minute
 from util import configuration
 
-configuration = configuration.configuration()
+configuration = configuration.Configuration()
 
-class coach:
+class Coach:
     def __init__(self, nn):
         self.nn = nn
         self.training_iterations = 0
@@ -47,7 +47,7 @@ class coach:
                     loss = element['result'] - result
                 test_result += loss / self.test_iterations
         
-        t = training.training(type(self.nn), self.training_iterations, self.test_iterations)
+        t = training.Training(type(self.nn), self.training_iterations, self.test_iterations)
         if(self.nn.type == 'classifier'):
             t.set_avg_success(test_result)
         else:
