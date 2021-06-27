@@ -20,6 +20,7 @@ class Minute:
             self.operation_rate = operation_list[4] / operation_list[5] #(operations) last minute / last hour
         self.result = None
         self.valoration = None
+        self.ref = ''
     
     def set_result(self, result):
         self.result = result
@@ -41,7 +42,8 @@ class Minute:
             'operation_list': self.operation_list,
             'operation_rate': float(self.operation_rate),
             'result': float(self.result),
-            'valoration': float(self.valoration)
+            'valoration': float(self.valoration),
+            'ref': str(self.ref)
         }
 
     

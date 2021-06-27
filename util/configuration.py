@@ -15,9 +15,9 @@ class Configuration:
     def read(self):
         with open('data.json','r') as file:
             data = json.load(file)
-            self.api_key = data['api_key']
-            self.api_secret = data['api_secret']
-            self.mongo_uri = data['mongo_uri']
+            self.api_key = str(data['api_key'])
+            self.api_secret = str(data['api_secret'])
+            self.mongo_uri = str(data['mongo_uri'])
 
     def to_list(self):
         return {
