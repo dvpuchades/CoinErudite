@@ -17,7 +17,7 @@ class Operation:
     def set_sell_price(self, sell_price, sell_commission):
         self.sell_price = sell_price
         self.sell_commission = sell_commission
-        self.earning = (self.sell_price - self.sell_commission) - (self.buy_price + self.buy_commission)
+        self.earning = (self.sell_price * (self.quantity - self.buy_commission) / self.buy_price) - self.sell_commission - self.quantity
         if(self.earning > 0):
             self.valoration = 1
 

@@ -2,42 +2,54 @@ from binance.client import Client
 from util import configuration
 from nn import ted
 from model import operation
-import asyncio
 import datetime
-
+import pymongo
+import time
+from model import minute
+ 
 configuration = configuration.Configuration()
 
 class Bank:
-    def __init__(self, OPERATION_RATIO, STAKE_RATIO):
+    def __init__(self, OPERATION_RATIO, STAKE_RATIO, nn):
         self.client = Client(configuration.api_key, configuration.api_secret)
+        self.client.API_URL = 'https://testnet.binance.vision/api' # SOLO PARA TESTING
         self.OPERATION_RATIO = OPERATION_RATIO
         self.STAKE_RATIO = STAKE_RATIO
         self.bankroll = 0
         self.info = None
+        self.exchange_info = None
         self.set_bankroll()
         self.stake = self.STAKE_RATIO * self.bankroll
         self.pick = self.stake * self.OPERATION_RATIO
-        self.nn = ted.Ted()
+        self.nn = nn
 
-        self.product_list = ['ethereum', 'cardano', 'dogecoin', 'polkadot', 'ripple', 'bitcoin', 'binance coin', 'uniswap', 'iota', 'luna coin']
-        self.symbol_list = ['ETHBUSD', 'ADABUSD', 'DOGEBUSD', 'DOTBUSD', 'XRPBUSD', 'BTCBUSD', 'BNBBUSD', 'UNIBUSD', 'IOTABUSD', 'LUNABUSD']
+        # self.product_list = ['ethereum', 'ripple', 'bitcoin', 'binance coin']
+        # self.symbol_list = ['ETHBUSD', 'XRPBUSD', 'BTCBUSD', 'BNBBUSD']
+        self.product_list = ['bitcoin', 'binance coin']
+        self.symbol_list = ['BTCBUSD', 'BNBBUSD']
         self.operation_list = []
 
     def set_bankroll(self):
         self.info = self.client.get_account() # Getting account info
-        self.bankroll = float(is_BUSD(info['balances'])['free'])
+        self.bankroll = float(is_BUSD(self.info['balances'])['free'])
 
-    async def open_operation(self, product, symbol_product):
-        quantity = self.pick
-        order = client.order_market_buy(
+    def open_operation(self, product, symbol_product, price):
+        # CODIGO ANTIGUO
+        # min_qty = get_min_quantity(self.exchange_info, symbol_product, price)
+        # if min_qty > self.pick:
+        #     quantity = min_qty
+        # else:
+        #     quantity = self.pick
+        quantity = self.get_price_format(symbol_product, price, self.pick / price)
+        order = self.client.order_market_buy(
             symbol=symbol_product,
             quantity= quantity)
         op = operation.Operation(product, symbol_product, quantity, order['fills'][0]['price'], order['fills'][0]['commission'])
         self.stake -= quantity
         return op
 
-    async def close_operation(self, op, quantity):
-        order = client.order_market_sell(
+    def close_operation(self, op, quantity):
+        order = self.client.order_market_sell(
             symbol=op.symbol,
             quantity= quantity)
         op.set_sell_price(order['fills'][0]['price'], order['fills'][0]['commission'])
@@ -60,6 +72,8 @@ class Bank:
         while(True):
             init_time = time.time()
             self.set_bankroll()
+            self.exchange_info = self.client.get_exchange_info()
+
             print('Bankroll: ' + str(self.bankroll))
             for s in range(len(self.symbol_list)):
                 price_list[s].append(float(self.client.get_symbol_ticker(symbol = self.symbol_list[s])['price']))
@@ -76,13 +90,24 @@ class Bank:
                 klines = self.client.get_historical_klines(self.symbol_list[i], Client.KLINE_INTERVAL_1HOUR, "3 hours ago UTC")
                 kline_list.append(float(klines[len(klines)-1][8]))
                 m = minute.Minute(self.product_list[i], self.symbol_list[i], -1, minute_list, average_5, average_10, average_15, average, kline_list)
-                if(self.nn(m) > 0.5 & (self.stake - self.pick) >= 0):
-                    asset = float(is_symbol(info['balances'], just_symbol(self.symbol_list[i]))['free'])
+                asset = float(is_symbol(self.info['balances'], just_symbol(self.symbol_list[i]))['free'])
+
+                ## Last Valoration ##
+                if (price_list[i][-1] - price_list[i][-2]) > 0:
+                    print('Last result UP')
+                else:
+                    print('Last result DOWN')
+                ## end ##
+
+                prediction = float(self.nn(m)[0])
+                print('Prediction: '+ str(prediction))
+                if((prediction > 0.8) and ((self.stake - self.pick) >= 0)):
                     if asset == 0 :
                         ref = generate_ref(i)
-                        op = self.open_operation(self.product_list[i], self.symbol_list[i])
+                        op = self.open_operation(self.product_list[i], self.symbol_list[i], price_list[i][-1])
                         op.insert_ref(ref)
                         m.ref = ref
+                        op.time += 1
                         self.operation_list.append(op)
                     else:
                         ref = generate_ref(i)
@@ -90,6 +115,7 @@ class Bank:
                             if op.symbol == self.symbol_list[i]:
                                 op.insert_ref(ref)
                                 m.ref = ref
+                                op.time += 1
                                 break
                         
                 else:
@@ -105,6 +131,34 @@ class Bank:
             if((time.time() - init_time) < 60):
                 print(str(60 - (time.time() - init_time)) + ' seconds margin')
                 time.sleep(60 - (time.time() - init_time))
+
+
+
+    def get_price_format(self, symbol_product, priceOrg, quantityOrg):
+
+        # https://stackoverflow.com/questions/61582902/python-binance-api-apierrorcode-1013-filter-failure-lot-size
+
+        price = float(priceOrg)
+        quantity = float(quantityOrg)
+        response = self.client.get_symbol_info(symbol_product)
+        priceFilterFloat = format(float(response["filters"][0]["tickSize"]), '.20f')
+        lotSizeFloat = format(float(response["filters"][2]["stepSize"]), '.20f')
+        # PriceFilter
+        numberAfterDot = str(priceFilterFloat.split(".")[1])
+        indexOfOne = numberAfterDot.find("1")
+        if indexOfOne == -1:
+            price = int(price)
+        else:
+            price = round(float(price), int(indexOfOne - 1))
+        # LotSize
+        numberAfterDotLot = str(lotSizeFloat.split(".")[1])
+        indexOfOneLot = numberAfterDotLot.find("1")
+        if indexOfOneLot == -1:
+            quantity = int(quantity)
+        else:
+            quantity = round(float(quantity), int(indexOfOneLot))
+        
+        return quantity
 
 
 
@@ -151,3 +205,15 @@ def generate_ref(index):
     d = datetime.datetime.now()
     res = str(d.year) + str(d.month) + str(d.day) + str(d.hour) + str(d.minute) + str(d.second) + str(index)
     return res
+
+def get_min_quantity(info, symbol_product, price):
+    for d in info['symbols']:
+        if(d['symbol'] == symbol_product):
+            for filter in d['filters']:
+                if filter['filterType'] == 'LOT_SIZE':
+                    qty = float(filter['minQty']) / float(price)
+                    qty = qty + (qty * 0.2)
+                    return round(qty, 2) # PROBAR Y JUGAR CON LOS DECIMALES
+                    break
+            break
+

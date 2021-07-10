@@ -10,15 +10,20 @@ class Coach:
         self.nn = nn
         self.training_iterations = 0
         self.test_iterations = 0
+        self.collection = 'Minutes'
 
     def set_iterations(self, training_iterations, test_iterations):
         self.training_iterations = training_iterations
         self.test_iterations = test_iterations
 
+    def set_collection(self, collection):
+        self.collection = collection
+
+
     def train(self):
         mongo_client = pymongo.MongoClient(host=[configuration.mongo_uri])
         db = mongo_client['NN3']
-        collection = db['Minutes']
+        collection = db[self.collection]
         collection = collection.find()
 
         minute_list = []
