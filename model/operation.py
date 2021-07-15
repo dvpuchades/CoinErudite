@@ -12,11 +12,24 @@ class Operation:
         self.sell_price = 0
         self.earning = 0
         self.valoration = 0
+        self.state = ''
+        self.fills = [] # aux to sell in different operations 
         self.ref = []
 
-    def set_sell_price(self, sell_price, sell_commission):
-        self.sell_price = sell_price
-        self.sell_commission = sell_commission
+    def set_sell_price(self, fills_info):
+        qty = 0
+        price = 0
+        commission = 0
+        for d in fills_info:
+            price += d['price']*d['qty']
+            commission += d['commission']*d['qty']
+            qty += d['qty']
+        if price > 0:
+            price = price / qty
+        if commission > 0:
+            commission = commission / qty
+        self.sell_price = price
+        self.sell_commission = commission
         self.earning = (self.sell_price * (self.quantity - self.buy_commission) / self.buy_price) - self.sell_commission - self.quantity
         if(self.earning > 0):
             self.valoration = 1

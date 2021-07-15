@@ -35,7 +35,7 @@ class Filler:
     def minute_generator(self):
         mongo_client = pymongo.MongoClient(host=[configuration.mongo_uri])
         db = mongo_client['NN3']
-        collection = db['Minutes (Ted)']
+        collection = db['Minutes']
         price_list = []
         for s in range(len(self.symbol_list)):
             price_list.append([])
@@ -65,7 +65,7 @@ class Filler:
                 m = minute.Minute(self.product_list[i], self.symbol_list[i], -1, minute_list, average_5, average_10, average_15, average, operation_list)
                 m.set_result(result)
                 collection.insert_one(m.to_dict()) #insertar en db
-                price_list[i].pop()
+                price_list[i].pop(0)
                 print('bip!')
             if((time.time() - init_time) < 60):
                 print(str(60 - (time.time() - init_time)) + ' seconds margin')

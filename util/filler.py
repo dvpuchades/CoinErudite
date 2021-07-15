@@ -69,7 +69,7 @@ class Filler:
                 m = minute.Minute(self.product_list[i], self.symbol_list[i], trends, minute_list, average_5, average_10, average_15, average, operation_list)
                 m.set_result(result)
                 collection.insert_one(m.to_dict()) #insertar en db
-                price_list[i].pop()
+                price_list[i].pop(0)
                 print('bip!')
             if((time.time() - init_time) < 60):
                 print(str(60 - (time.time() - init_time)) + ' seconds margin')

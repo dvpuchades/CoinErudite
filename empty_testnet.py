@@ -21,7 +21,7 @@ def get_symbol_index(symbol, info):
 
 info = client.get_account() # Getting account info
 
-symbol = 'ETHUSDT'
+symbol = 'BNBUSDT'
 index = get_symbol_index(symbol, info)
 
 q = float(info['balances'][index]['free'])
@@ -34,4 +34,4 @@ while(q > 0):
     time.sleep(0.05)
     print(info['balances'][index]['free'])
 
-print(info)
+print(order)

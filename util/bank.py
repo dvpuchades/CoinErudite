@@ -13,6 +13,10 @@ class Bank:
     def __init__(self, OPERATION_RATIO, STAKE_RATIO, nn):
         self.client = Client(configuration.api_key, configuration.api_secret)
         self.client.API_URL = 'https://testnet.binance.vision/api' # SOLO PARA TESTING
+        mongo_client = pymongo.MongoClient(host=[configuration.mongo_uri])
+        self.db = mongo_client['NN3']
+        self.operations_collection = self.db['Operations']
+
         self.OPERATION_RATIO = OPERATION_RATIO
         self.STAKE_RATIO = STAKE_RATIO
         self.bankroll = 0
@@ -21,6 +25,7 @@ class Bank:
         self.set_bankroll()
         self.stake = self.STAKE_RATIO * self.bankroll
         self.pick = self.stake * self.OPERATION_RATIO
+
         self.nn = nn
 
         # self.product_list = ['ethereum', 'ripple', 'bitcoin', 'binance coin']
@@ -28,6 +33,10 @@ class Bank:
         self.product_list = ['bitcoin', 'binance coin']
         self.symbol_list = ['BTCBUSD', 'BNBBUSD']
         self.operation_list = []
+
+        self.price_list = []
+        self.kline_list = []
+
 
     def set_bankroll(self):
         self.info = self.client.get_account() # Getting account info
@@ -48,19 +57,27 @@ class Bank:
         self.stake -= quantity
         return op
 
-    def close_operation(self, op, quantity):
+    def close_operation(self, op):
+        index = get_symbol_index(op.symbol, self.info)
+        quantity = float(self.info['balances'][index]['free'])
         order = self.client.order_market_sell(
-            symbol=op.symbol,
+            symbol= op.symbol,
             quantity= quantity)
-        op.set_sell_price(order['fills'][0]['price'], order['fills'][0]['commission'])
-        self.stake += quantity
+        op.fills += order['fills']
+        price = order['fills'][-1]['price']
+        self.set_bankroll()
+        self.stake += quantity * price
+        quantity = float(self.info['balances'][index]['free'])
+        if quantity == 0:
+            op.state = 'closed'
+            op.set_sell_price(op.fills)
+        else:
+            op.state = 'closing'
+            self.stake -= quantity * price
         return op
     
     def on_air(self):
-        mongo_client = pymongo.MongoClient(host=[configuration.mongo_uri])
-        db = mongo_client['NN3']
-        collection = db['Operations']
-        price_list = []
+        
         for s in range(len(self.symbol_list)):
             price_list.append([])
         for period in range(14):
@@ -131,6 +148,82 @@ class Bank:
             if((time.time() - init_time) < 60):
                 print(str(60 - (time.time() - init_time)) + ' seconds margin')
                 time.sleep(60 - (time.time() - init_time))
+
+    
+    def get_minutes(self):
+        minutes = []
+        if self.price_list == []:
+            for s in range(len(self.symbol_list)):
+                self.price_list.append([])
+            for period in range(15):
+                period_time = time.time()
+                for s in range(len(self.symbol_list)):
+                    self.price_list[s].append(float(self.client.get_symbol_ticker(symbol = self.symbol_list[s])['price']))
+                if((time.time() - period_time) < 60):
+                    time.sleep(60 - (time.time() - period_time))
+
+        # inconditional code
+        for s in range(len(self.symbol_list)):
+            self.price_list[s].pop(0)
+            self.price_list[s].append(float(self.client.get_symbol_ticker(symbol = self.symbol_list[s])['price']))
+        for i in range(len(self.product_list)):
+            average  = float(self.client.get_avg_price(symbol=self.symbol_list[i])['price'])
+            minute_list = self.price_list[i][10:]
+            average_5 = amount(minute_list) / 5
+            average_10 = amount(price_list[i][5:]) / 10
+            average_15 = amount(price_list[i]) / 15
+            kline_list = []
+            klines = self.client.get_historical_klines(self.symbol_list[i], Client.KLINE_INTERVAL_1MINUTE, "8 minutes ago UTC")
+            for x in range(len(klines) - 5, len(klines)):
+                kline_list.append(float(klines[x][8]))
+            klines = self.client.get_historical_klines(self.symbol_list[i], Client.KLINE_INTERVAL_1HOUR, "3 hours ago UTC")
+            kline_list.append(float(klines[len(klines)-1][8]))
+            m = minute.Minute(self.product_list[i], self.symbol_list[i], -1, minute_list, average_5, average_10, average_15, average, kline_list)
+            minutes.append(m)
+        return minutes
+
+
+    def evaluate_minutes(self, minutes):
+        evaluation = []
+        for m in minutes:
+            evaluation.append(float(self.nn(m)[0]))
+        return evaluation
+
+
+    def take_decisions(self, evaluation):
+        #   primera iteración
+        if self.operation_list == []:
+            for i in range(len(self.symbol_list)):
+                self.operation_list.append(None)
+        #   cualquier iteración
+        for i in range(len(self.symbol_list)):
+            if(evaluation[i] > 0.8):
+                #   código para pronóstico positivo
+                if self.operation_list[i] == None:
+                    op = self.open_operation(self.product_list[i], self.symbol_list[i], self.price_list[i])
+                    op.state = 'open'
+                    self.operation_list[i] = op
+
+            else:
+                #   código para pronóstico negativo
+                if self.operation_list[i] != None:
+                    op = self.close_operation(self.operation_list[i])
+                    if op.state == 'closed':
+                        self.operation_list[i] = None
+                        # insertar en la base de datos          POR REALIZAR
+                    else:
+                        self.operation_list[i] = op
+
+
+    def on_air_new_edition(self):
+        while True:
+            init_time = time.time()
+            minutes = self.get_minutes()
+            evaluation = self.evaluate_minutes(minutes)
+            take_decisions(evaluation)
+            ejecution_time = time.time() - init_time
+            if ejecution_time < 60:
+                time.sleep(60 - ejecution_time)
 
 
 
@@ -206,14 +299,11 @@ def generate_ref(index):
     res = str(d.year) + str(d.month) + str(d.day) + str(d.hour) + str(d.minute) + str(d.second) + str(index)
     return res
 
-def get_min_quantity(info, symbol_product, price):
-    for d in info['symbols']:
-        if(d['symbol'] == symbol_product):
-            for filter in d['filters']:
-                if filter['filterType'] == 'LOT_SIZE':
-                    qty = float(filter['minQty']) / float(price)
-                    qty = qty + (qty * 0.2)
-                    return round(qty, 2) # PROBAR Y JUGAR CON LOS DECIMALES
-                    break
-            break
+def get_symbol_index(symbol, info):
+    s = symbol.split('BUSD')[0]
+    i = 0
+    for element in info['balances']:
+        if element['asset'] == s:
+            return i
+        i += 1
 

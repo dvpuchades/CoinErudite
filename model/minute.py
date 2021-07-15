@@ -18,8 +18,8 @@ class Minute:
             self.operation_rate = 1
         else:
             self.operation_rate = operation_list[4] / operation_list[5] #(operations) last minute / last hour
-        self.result = None
-        self.valoration = None
+        self.result = -1        # -1 as None
+        self.valoration = -1    # -1 as None
         self.ref = ''
     
     def set_result(self, result):
