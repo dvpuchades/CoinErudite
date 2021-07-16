@@ -10,6 +10,7 @@ class Operation:
         self.buy_commission = buy_commission
         self.time = 0   # time in minutes
         self.sell_price = 0
+        self.sell_commission = 0
         self.earning = 0
         self.valoration = 0
         self.state = 'open'
@@ -37,7 +38,7 @@ class Operation:
     def insert_ref(self, ref):
         self.ref.append(ref)
     
-    def to_dict():
+    def to_dict(self):
         return {
             'date': self.date,
             'product': str(self.product),
@@ -50,5 +51,6 @@ class Operation:
             'sell_commission': float(self.sell_commission),
             'earning': float(self.earning),
             'valoration': float(self.valoration),
-            'ref': self.ref
+            'ref': self.ref,
+            'state': self.state
         }

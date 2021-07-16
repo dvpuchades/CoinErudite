@@ -29,9 +29,10 @@ class Bank:
 
         # self.product_list = ['ethereum', 'ripple', 'bitcoin', 'binance coin']
         # self.symbol_list = ['ETHBUSD', 'XRPBUSD', 'BTCBUSD', 'BNBBUSD']
-        self.product_list = ['bitcoin', 'binance coin', 'ethereum', 'ripple']
-        self.symbol_list = ['BTCBUSD', 'BNBBUSD', 'ETHBUSD', 'XRPBUSD']
+        self.product_list = ['ethereum', 'cardano', 'polkadot', 'ripple', 'bitcoin', 'binance coin', 'uniswap', 'iota', 'luna coin']
+        self.symbol_list = ['ETHBUSD', 'ADABUSD', 'DOTBUSD', 'XRPBUSD', 'BTCBUSD', 'BNBBUSD', 'UNIBUSD', 'IOTABUSD', 'LUNABUSD']
         self.operation_list = []
+        self.suspended_operations = [] # SEGUIR AQUI
 
         self.price_list = []
         self.kline_list = []
@@ -64,6 +65,10 @@ class Bank:
     def close_operation(self, op):
         index = get_symbol_index(op.symbol, self.info)
         quantity = self.get_price_format(op.symbol, 1.0, float(self.info['balances'][index]['free']))
+        if str(quantity) == 'invalid quantity':
+            op.state = 'suspended'
+            return op
+
         order = self.client.order_market_sell(
             symbol= op.symbol,
             quantity= quantity)
@@ -95,8 +100,8 @@ class Bank:
                 period_time = time.time()
                 for s in range(len(self.symbol_list)):
                     self.price_list[s].append(float(self.client.get_symbol_ticker(symbol = self.symbol_list[s])['price']))
-                if((time.time() - period_time) < 6):
-                    time.sleep(6 - (time.time() - period_time))
+                if((time.time() - period_time) < 60):
+                    time.sleep(60 - (time.time() - period_time))
 
         # inconditional code
         for s in range(len(self.symbol_list)):
@@ -123,6 +128,7 @@ class Bank:
         evaluation = []
         for m in minutes:
             evaluation.append(float(self.nn(m)[0]))
+        print(evaluation)
         return evaluation
 
 
@@ -135,7 +141,7 @@ class Bank:
         for i in range(len(self.symbol_list)):
             if(evaluation[i] > 0.8):
                 #   código para pronóstico positivo
-                if self.operation_list[i] == None:
+                if (self.operation_list[i] == None) and ((self.stake - self.pick) >= 0):
                     op = self.open_operation(self.product_list[i], self.symbol_list[i], self.price_list[i][-1])
                     self.operation_list[i] = op
 
@@ -143,11 +149,26 @@ class Bank:
                 #   código para pronóstico negativo
                 if self.operation_list[i] != None:
                     op = self.close_operation(self.operation_list[i])
-                    if op.state == 'closed':
+                    if (op.state == 'closed'):
                         self.operation_list[i] = None
                         self.operations_collection.insert_one(op.to_dict())
+                    if  (op.state == 'suspended'):
+                        self.operation_list[i] = None
+                        self.operations_collection.insert_one(op.to_dict())
+                        self.suspended_operations.append(op)
                     else:
                         self.operation_list[i] = op
+
+    def try_suspended_operations(self):
+        so = []
+        for op in self.suspended_operations:
+            op = self.close_operation(op)
+            if (op.state == 'closed'):
+                self.operations_collection.insert_one(op.to_dict())
+            if  (op.state == 'suspended'):
+                so.append(op)
+        self.suspended_operations = so
+    
 
 
     def on_air(self):
@@ -156,9 +177,11 @@ class Bank:
             minutes = self.get_minutes()
             evaluation = self.evaluate_minutes(minutes)
             self.take_decisions(evaluation)
+            self.try_suspended_operations()
+
             ejecution_time = time.time() - init_time
-            if ejecution_time < 6:
-                time.sleep(6 - ejecution_time)
+            if ejecution_time < 60:
+                time.sleep(60 - ejecution_time)
 
 
 
