@@ -1,3 +1,4 @@
 *.json
 *.pkl
 *.txt
+__pycache__

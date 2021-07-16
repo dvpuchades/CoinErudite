@@ -53,8 +53,11 @@ class Bank:
         order = self.client.order_market_buy(
             symbol=symbol_product,
             quantity= quantity)
+        if(order['fills'] == []):
+            return None
         op = operation.Operation(product, symbol_product, quantity, order['fills'][0]['price'], order['fills'][0]['commission'])
         self.stake -= quantity
+        print('Opened!')
         return op
 
     def close_operation(self, op):
@@ -71,6 +74,7 @@ class Bank:
         if quantity == 0:
             op.state = 'closed'
             op.set_sell_price(op.fills)
+            print('Closed!')
         else:
             op.state = 'closing'
             self.stake -= quantity * price
@@ -159,8 +163,8 @@ class Bank:
                 period_time = time.time()
                 for s in range(len(self.symbol_list)):
                     self.price_list[s].append(float(self.client.get_symbol_ticker(symbol = self.symbol_list[s])['price']))
-                if((time.time() - period_time) < 60):
-                    time.sleep(60 - (time.time() - period_time))
+                if((time.time() - period_time) < 6):
+                    time.sleep(6 - (time.time() - period_time))
 
         # inconditional code
         for s in range(len(self.symbol_list)):
@@ -170,8 +174,8 @@ class Bank:
             average  = float(self.client.get_avg_price(symbol=self.symbol_list[i])['price'])
             minute_list = self.price_list[i][10:]
             average_5 = amount(minute_list) / 5
-            average_10 = amount(price_list[i][5:]) / 10
-            average_15 = amount(price_list[i]) / 15
+            average_10 = amount(self.price_list[i][5:]) / 10
+            average_15 = amount(self.price_list[i]) / 15
             kline_list = []
             klines = self.client.get_historical_klines(self.symbol_list[i], Client.KLINE_INTERVAL_1MINUTE, "8 minutes ago UTC")
             for x in range(len(klines) - 5, len(klines)):
@@ -200,8 +204,7 @@ class Bank:
             if(evaluation[i] > 0.8):
                 #   código para pronóstico positivo
                 if self.operation_list[i] == None:
-                    op = self.open_operation(self.product_list[i], self.symbol_list[i], self.price_list[i])
-                    op.state = 'open'
+                    op = self.open_operation(self.product_list[i], self.symbol_list[i], self.price_list[i][-1])
                     self.operation_list[i] = op
 
             else:
@@ -210,7 +213,7 @@ class Bank:
                     op = self.close_operation(self.operation_list[i])
                     if op.state == 'closed':
                         self.operation_list[i] = None
-                        # insertar en la base de datos          POR REALIZAR
+                        self.operations_collection.insert_one(op.to_dict())
                     else:
                         self.operation_list[i] = op
 
@@ -220,10 +223,10 @@ class Bank:
             init_time = time.time()
             minutes = self.get_minutes()
             evaluation = self.evaluate_minutes(minutes)
-            take_decisions(evaluation)
+            self.take_decisions(evaluation)
             ejecution_time = time.time() - init_time
-            if ejecution_time < 60:
-                time.sleep(60 - ejecution_time)
+            if ejecution_time < 6:
+                time.sleep(6 - ejecution_time)
 
 
 

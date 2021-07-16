@@ -12,7 +12,7 @@ class Operation:
         self.sell_price = 0
         self.earning = 0
         self.valoration = 0
-        self.state = ''
+        self.state = 'open'
         self.fills = [] # aux to sell in different operations 
         self.ref = []
 
