@@ -12,7 +12,7 @@ account_info = client.get_account()
 print(account_info)
 
 def get_symbol_index(symbol, info):
-    s = symbol.split('USDT')[0]
+    s = symbol.split('BUSD')[0]
     i = 0
     for element in info['balances']:
         if element['asset'] == s:
@@ -21,7 +21,7 @@ def get_symbol_index(symbol, info):
 
 info = client.get_account() # Getting account info
 
-symbol = 'BNBUSDT'
+symbol = 'ETHBUSD'
 index = get_symbol_index(symbol, info)
 
 q = float(info['balances'][index]['free'])

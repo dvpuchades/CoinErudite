@@ -17,6 +17,7 @@ def get_price_format(symbol_product, priceOrg, quantityOrg):
     price = float(priceOrg)
     quantity = float(quantityOrg)
     response = client.get_symbol_info(symbol_product)
+    print(response)
     priceFilterFloat = format(float(response["filters"][0]["tickSize"]), '.20f')
     lotSizeFloat = format(float(response["filters"][2]["stepSize"]), '.20f')
     # PriceFilter
