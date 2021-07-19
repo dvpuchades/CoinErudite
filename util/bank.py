@@ -29,8 +29,8 @@ class Bank:
 
         # self.product_list = ['ethereum', 'ripple', 'bitcoin', 'binance coin']
         # self.symbol_list = ['ETHBUSD', 'XRPBUSD', 'BTCBUSD', 'BNBBUSD']
-        self.product_list = ['ethereum', 'cardano', 'polkadot', 'ripple', 'bitcoin', 'binance coin', 'uniswap', 'iota', 'luna coin']
-        self.symbol_list = ['ETHBUSD', 'ADABUSD', 'DOTBUSD', 'XRPBUSD', 'BTCBUSD', 'BNBBUSD', 'UNIBUSD', 'IOTABUSD', 'LUNABUSD']
+        self.product_list = ['cardano', 'polkadot', 'uniswap', 'iota', 'luna coin']
+        self.symbol_list = ['ADABUSD', 'DOTBUSD', 'UNIBUSD', 'IOTABUSD', 'LUNABUSD']
         self.operation_list = []
         self.suspended_operations = [] # SEGUIR AQUI
 
@@ -64,6 +64,7 @@ class Bank:
 
     def close_operation(self, op):
         index = get_symbol_index(op.symbol, self.info)
+        print('Closing ' + op.product)
         quantity = self.get_price_format(op.symbol, 1.0, float(self.info['balances'][index]['free']))
         if str(quantity) == 'invalid quantity':
             op.state = 'suspended'
@@ -128,7 +129,6 @@ class Bank:
         evaluation = []
         for m in minutes:
             evaluation.append(float(self.nn(m)[0]))
-        print(evaluation)
         return evaluation
 
 
@@ -148,7 +148,7 @@ class Bank:
             else:
                 #   código para pronóstico negativo
                 if self.operation_list[i] != None:
-                    op = self.close_operation(self.operation_list[i])
+                    op = self.close_operation(self.operation_list[i], self.price_list[i][-1])
                     if (op.state == 'closed'):
                         self.operation_list[i] = None
                         self.operations_collection.insert_one(op.to_dict())
@@ -162,7 +162,7 @@ class Bank:
     def try_suspended_operations(self):
         so = []
         for op in self.suspended_operations:
-            op = self.close_operation(op)
+            op = self.close_operation(op, get_price_index(op.symbol, self.symbol_list))
             if (op.state == 'closed'):
                 self.operations_collection.insert_one(op.to_dict())
             if  (op.state == 'suspended'):
@@ -221,7 +221,7 @@ class Bank:
             quantity = round(float(quantity), int(indexOfOneLot))
 
         # Quantity
-        if quantity < minNotionalFloat:
+        if quantity < minNotionalFloat / price:
             return 'invalid quantity'
         if quantity > maxMarketSize:
             return maxMarketSize
@@ -254,3 +254,10 @@ def get_symbol_index(symbol, info):
             return i
         i += 1
 
+def get_price_index(symbol, symbol_list):
+    i = -1
+    for s in symbol_list:
+        i += 1
+        if s == symbol:
+            return i
+    return -1

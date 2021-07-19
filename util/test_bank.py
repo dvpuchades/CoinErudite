@@ -64,7 +64,7 @@ class Bank:
 
     def close_operation(self, op):
         index = get_symbol_index(op.symbol, self.info)
-        quantity = self.get_price_format(op.symbol, 1.0, float(self.info['balances'][index]['free']))
+        quantity = self.get_price_format(op.symbol, self.minute_list[-1], float(self.info['balances'][index]['free']))
         order = self.client.order_market_sell(
             symbol= op.symbol,
             quantity= quantity)
