@@ -2,6 +2,7 @@ from pycoingecko import CoinGeckoAPI
 from util import configuration
 import pymongo
 import time
+from model import day
 
 configuration = configuration.Configuration()
 mongo_client = pymongo.MongoClient(host=[configuration.mongo_uri])
@@ -66,7 +67,7 @@ for i in range(2000):
         
         result = float(data_list[0][1]['market_data']['current_price']['usd'])
 
-        day = Day(date, product, price_list, market_cap, average_15, average_30, average_90)
+        day = day.Day(date, product, price_list, market_cap, average_15, average_30, average_90)
 
         day.twitter_followers = int(data_list[1][1]['community_data']['twitter_followers'])
         day.reddit_average_posts_48h = float(data_list[1][1]['community_data']['reddit_average_posts_48h'])
