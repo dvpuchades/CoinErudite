@@ -1,4 +1,14 @@
 from pycoingecko import CoinGeckoAPI
+from util import configuration
+import pymongo
+import time
+
+configuration = configuration.Configuration()
+mongo_client = pymongo.MongoClient(host=[configuration.mongo_uri])
+db = mongo_client['NN3']
+collection = db['Day']
+
+
 cg = CoinGeckoAPI()
 
 def get_one_day_ago(str_day):
@@ -24,4 +34,49 @@ def get_one_day_ago(str_day):
     else:
         return str(day - 1)+'-'+str(month)+'-'+str(year)
 
-day = '27-07-2021'
+day = '28-07-2021'
+
+data_list = []
+
+for i in range(2000):
+    data = cg.get_coin_history_by_id(id='bitcoin', date=day)
+    data_list.append([day, data])
+    day = get_one_day_ago(day)
+    if(len(data_list) == 91):
+        date = data_list[1][0]
+        product = 'bitcoin'
+
+        price_list = []
+        for j in range(5, 0, -1):
+            price_list.append(float(data_list[j][1]['market_data']['current_price']['usd']))
+        
+        market_cap =float(data_list[0][1]['market_data']['market_cap']['usd'])
+
+        average_15 = 0
+        for j in range(1, 16):
+            average_15 += float(data_list[j][1]['market_data']['current_price']['usd']) / 15
+
+        average_30 = 0
+        for j in range(1, 31):
+            average_30 += float(data_list[j][1]['market_data']['current_price']['usd']) / 30
+
+        average_90 = 0
+        for j in range(1, 91):
+            average_90 += float(data_list[j][1]['market_data']['current_price']['usd']) / 90
+        
+        result = float(data_list[0][1]['market_data']['current_price']['usd'])
+
+        day = Day(date, product, price_list, market_cap, average_15, average_30, average_90)
+
+        day.twitter_followers = int(data_list[1][1]['community_data']['twitter_followers'])
+        day.reddit_average_posts_48h = float(data_list[1][1]['community_data']['reddit_average_posts_48h'])
+        day.reddit_average_comments_48h = float(data_list[1][1]['community_data']['reddit_average_comments_48h'])
+        day.alexa_rank = int(data_list[1][1]['public_interest_stats']['alexa_rank'])
+
+        day.set_result(result)
+        
+        collection.insert_one(day.to_dict()) #insertar en db
+
+        data_list.pop(0)
+
+        time.sleep(10)

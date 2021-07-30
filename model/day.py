@@ -1,5 +1,5 @@
 class Day:
-    def __init__(self, date, product, price_list, market_cap, operation_list):
+    def __init__(self, date, product, price_list, market_cap, average_15, average_30, average_90):
         self.date = date
         self.product = product
         self.twitter_followers = 0
@@ -8,7 +8,9 @@ class Day:
         self.alexa_rank = 0
         self.price_list = price_list  #list of the price from the last 5 prices
         self.market_cap = market_cap
-        self.operation_list = operation_list #list of the number of operations on the last 5 prices (5) and 1 hour (just one)
+        self.average_15 = average_15
+        self.average_30 = average_30
+        self.average_90 = average_90
         self.result = -1        # -1 as None
         self.valoration = -1    # -1 as None
     
@@ -28,7 +30,9 @@ class Day:
             'alexa_rank': int(self.alexa_rank),
             'price_list': self.price_list,
             'market_cap': float(self.market_cap),
-            'operation_list': self.operation_list,
+            'average_15': self.average_15,
+            'average_30': self.average_30,
+            'average_90': self.average_90,
             'result': float(self.result),
             'valoration': float(self.valoration)
         }
@@ -42,7 +46,7 @@ class Day:
             self.alexa_rank,
             self.price_list,
             self.market_cap,
-            self.operation_list
+            self.average_15
         ])
 
 def flatter(lst):
@@ -55,7 +59,7 @@ def flatter(lst):
     return ret
 
 def from_dict(dict):
-     m = Day(dict['date'], dict['product'], dict['price_list'], dict['market_cap'], dict['operation_list'])
+     m = Day(dict['date'], dict['product'], dict['price_list'], dict['market_cap'], dict['average_15'])
      m.twitter_followers = dict['twitter_followers']
      m.reddit_average_posts_48h = dict['reddit_average_posts_48h']
      m.reddit_average_comments_48h = dict['reddit_average_comments_48h']
