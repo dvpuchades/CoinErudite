@@ -79,4 +79,4 @@ for i in range(2000):
 
         data_list.pop(0)
 
-        time.sleep(10)
+    time.sleep(3)
