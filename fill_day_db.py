@@ -69,10 +69,30 @@ for i in range(2000):
 
         d = Day(date, product, price_list, market_cap, average_15, average_30, average_90)
 
-        d.twitter_followers = int(data_list[1][1]['community_data']['twitter_followers'])
-        d.reddit_average_posts_48h = float(data_list[1][1]['community_data']['reddit_average_posts_48h'])
-        d.reddit_average_comments_48h = float(data_list[1][1]['community_data']['reddit_average_comments_48h'])
-        d.alexa_rank = int(data_list[1][1]['public_interest_stats']['alexa_rank'])
+        d.twitter_followers = data_list[1][1]['community_data']['twitter_followers']
+        d.reddit_average_posts_48h = data_list[1][1]['community_data']['reddit_average_posts_48h']
+        d.reddit_average_comments_48h = data_list[1][1]['community_data']['reddit_average_comments_48h']
+        d.alexa_rank = data_list[1][1]['public_interest_stats']['alexa_rank']
+
+        if d.twitter_followers == None:
+            d.twitter_followers = 0
+        else:
+            d.twitter_followers = int(d.twitter_followers)
+
+        if d.reddit_average_posts_48h == None:
+            d.reddit_average_posts_48h = 0
+        else:
+            d.reddit_average_posts_48h = float(d.reddit_average_posts_48h)
+
+        if d.reddit_average_comments_48h == None:
+            d.reddit_average_comments_48h = 0
+        else:
+            d.reddit_average_comments_48h = float(d.reddit_average_comments_48h)
+
+        if d.alexa_rank == None:
+            d.alexa_rank = 0
+        else:
+            d.alexa_rank = int(d.alexa_rank)
 
         d.set_result(result)
         
