@@ -2,12 +2,12 @@ from pycoingecko import CoinGeckoAPI
 from util import configuration
 import pymongo
 import time
-from model import day
+from model.day import Day
 
 configuration = configuration.Configuration()
 mongo_client = pymongo.MongoClient(host=[configuration.mongo_uri])
 db = mongo_client['NN3']
-collection = db['Day']
+collection = db['Days']
 
 
 cg = CoinGeckoAPI()
@@ -67,16 +67,16 @@ for i in range(2000):
         
         result = float(data_list[0][1]['market_data']['current_price']['usd'])
 
-        day = day.Day(date, product, price_list, market_cap, average_15, average_30, average_90)
+        d = Day(date, product, price_list, market_cap, average_15, average_30, average_90)
 
-        day.twitter_followers = int(data_list[1][1]['community_data']['twitter_followers'])
-        day.reddit_average_posts_48h = float(data_list[1][1]['community_data']['reddit_average_posts_48h'])
-        day.reddit_average_comments_48h = float(data_list[1][1]['community_data']['reddit_average_comments_48h'])
-        day.alexa_rank = int(data_list[1][1]['public_interest_stats']['alexa_rank'])
+        d.twitter_followers = int(data_list[1][1]['community_data']['twitter_followers'])
+        d.reddit_average_posts_48h = float(data_list[1][1]['community_data']['reddit_average_posts_48h'])
+        d.reddit_average_comments_48h = float(data_list[1][1]['community_data']['reddit_average_comments_48h'])
+        d.alexa_rank = int(data_list[1][1]['public_interest_stats']['alexa_rank'])
 
-        day.set_result(result)
+        d.set_result(result)
         
-        collection.insert_one(day.to_dict()) #insertar en db
+        collection.insert_one(d.to_dict()) #insertar en db
 
         data_list.pop(0)
 
