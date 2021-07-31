@@ -42,6 +42,7 @@ data_list = []
 product = ['bitcoin', 'ethereum', 'ripple', 'tether', 'binancecoin', 'polkadot', 'litecoin', 'stellar']
 
 for p in product:
+    print(p)
     for i in range(2000):
         data = cg.get_coin_history_by_id(id=p, date=day)
         data_list.append([day, data])
@@ -73,7 +74,7 @@ for p in product:
             
             result = float(data_list[0][1]['market_data']['current_price']['usd'])
 
-            d = Day(date, product, price_list, market_cap, average_15, average_30, average_90)
+            d = Day(date, p, price_list, market_cap, average_15, average_30, average_90)
 
             d.twitter_followers = data_list[1][1]['community_data']['twitter_followers']
             d.reddit_average_posts_48h = data_list[1][1]['community_data']['reddit_average_posts_48h']
