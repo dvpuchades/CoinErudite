@@ -35,7 +35,7 @@ def get_one_day_ago(str_day):
     else:
         return str(day - 1)+'-'+str(month)+'-'+str(year)
 
-day = '29-07-2021'
+day = '30-07-2021'
 
 data_list = []
 
