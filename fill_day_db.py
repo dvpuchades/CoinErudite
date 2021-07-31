@@ -53,7 +53,11 @@ for p in product:
             for j in range(5, 0, -1):
                 price_list.append(float(data_list[j][1]['market_data']['current_price']['usd']))
             
-            market_cap =float(data_list[0][1]['market_data']['market_cap']['usd'])
+            market_cap = data_list[0][1]['market_data']['market_cap']['usd']
+            if market_cap == None:
+                market_cap = 0
+            else:
+                market_cap = float(market_cap)
 
             average_15 = 0
             for j in range(1, 16):
