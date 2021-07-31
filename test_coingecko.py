@@ -25,7 +25,7 @@ def get_one_day_ago(str_day):
 day = '27-07-2021'
 
 for i in range(1):
-    data = cg.get_coin_history_by_id(id='bitcoin', date=day)
+    data = cg.get_coin_history_by_id(id='ethereum', date=day)
     print(day)
     print(data)
     #print(data['market_data']['current_price']['usd'])

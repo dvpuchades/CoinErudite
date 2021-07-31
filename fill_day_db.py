@@ -35,14 +35,15 @@ def get_one_day_ago(str_day):
     else:
         return str(day - 1)+'-'+str(month)+'-'+str(year)
 
-day = '30-07-2021'
 
-data_list = []
 
 product = ['bitcoin', 'ethereum', 'ripple', 'tether', 'binancecoin', 'polkadot', 'litecoin', 'stellar']
 
 for p in product:
     print(p)
+    day = '30-07-2021'
+
+    data_list = []
     for i in range(2000):
         data = cg.get_coin_history_by_id(id=p, date=day)
         data_list.append([day, data])
