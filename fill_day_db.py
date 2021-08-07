@@ -37,7 +37,7 @@ def get_one_day_ago(str_day):
 
 
 
-product = ['bitcoin', 'ethereum', 'ripple', 'tether', 'binancecoin', 'polkadot', 'litecoin', 'stellar']
+product = ['bitcoin', 'ethereum', 'ripple', 'binancecoin', 'polkadot', 'litecoin', 'stellar']
 
 for p in product:
     print(p)
