@@ -18,18 +18,18 @@ class Beth(nn.Module):
         self.type = 'classifier'
         self.input_layer = nn.Linear(22, 150)
         self.hidden_layer = nn.Linear(150,25)
-        self.output_layer = nn.Linear(25,2)
+        self.output_layer = nn.Linear(25,3)
         self.activation = nn.ReLU()
 
     def forward(self, input_minute):
         i = input_list_from_minute(input_minute)
-        output = self.activation(self.input_layer(i)) #pasada por la capa entrada
-        output = self.activation(self.hidden_layer(output))   #pasada por la capa oculta
-        output = self.output_layer(output)                    #pasada por la capa de salida
+        output = self.activation(self.input_layer(i)) # pasada por la capa entrada
+        output = self.activation(self.hidden_layer(output))   # pasada por la capa oculta
+        output = self.output_layer(output)                    # pasada por la capa de salida
         return output
 
 
-    def learn(self, minute):
+    def learn(self, minute, next_minute):
         loss_function = nn.CrossEntropyLoss() #función de pérdidas
         parameters = self.parameters()
         optimizer = optim.Adam(params=parameters, lr=0.001) #algoritmo usado para optimizar los parámetros
@@ -37,10 +37,15 @@ class Beth(nn.Module):
 
         output = self(minute) #calcular la salida para una imagen
         self.zero_grad() #poner los gradientes a cero en cada iteración
-        if int(minute.valoration) == 0:
-            target = torch.tensor([0, 1])
+
+        if next_minute_unstable(next_minute):
+            target = torch.tensor([0, 0, 1])
+            print('not!')
+        elif int(minute.valoration) == 0:
+            target = torch.tensor([0, 1, 0])
         else:
-            target = torch.tensor([1, 0])
+            target = torch.tensor([1, 0, 0])
+
         error = loss_function(output, target) #calcular el error
         error.backward() #obtener los gradientes y propagar
         optimizer.step() #actualizar los pesos con los gradientes
@@ -150,3 +155,13 @@ def zero_div(c, d):
     if d == 0:
         return 1
     return c / d
+
+
+def next_minute_unstable(m):
+    if m.price_list[4] == False and m.price_list[3] == True and m.price_list[2] == False:
+        return True
+
+    if m.price_list[4] == True and m.price_list[3] == False and m.price_list[2] == True:
+        return True
+
+    return False
