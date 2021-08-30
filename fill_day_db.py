@@ -37,14 +37,15 @@ def get_one_day_ago(str_day):
 
 
 
-product = ['bitcoin', 'ethereum', 'ripple', 'binancecoin', 'polkadot', 'litecoin', 'stellar']
+# product = ['bitcoin', 'ethereum', 'ripple', 'binancecoin', 'polkadot', 'litecoin', 'stellar']
+product = ['ethereum', 'ripple', 'binancecoin', 'polkadot', 'litecoin', 'stellar']
 
 for p in product:
     print(p)
-    day = '30-07-2021'
+    day = '4-8-2020'
 
     data_list = []
-    for i in range(2000):
+    for i in range(1500):
         data = cg.get_coin_history_by_id(id=p, date=day)
         data_list.append([day, data])
         day = get_one_day_ago(day)
@@ -108,4 +109,4 @@ for p in product:
 
             data_list.pop(0)
 
-        time.sleep(3)
+        time.sleep(1)

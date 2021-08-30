@@ -59,7 +59,7 @@ def flatter(lst):
     return ret
 
 def from_dict(dict):
-     m = Day(dict['date'], dict['product'], dict['price_list'], dict['market_cap'], dict['average_15'])
+     m = Day(dict['date'], dict['product'], dict['price_list'], dict['market_cap'], dict['average_15'], dict['average_30'], dict['average_90'])
      m.twitter_followers = dict['twitter_followers']
      m.reddit_average_posts_48h = dict['reddit_average_posts_48h']
      m.reddit_average_comments_48h = dict['reddit_average_comments_48h']

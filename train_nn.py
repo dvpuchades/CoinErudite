@@ -1,15 +1,17 @@
 from util import coach
 from util import beth_coach
+from util import richard_coach
 from nn import ted
 from nn import beth
 from nn import rick
+from nn import richard
 import torch
 
-nn = beth.Beth()
+nn = richard.Richard()
 # nn.load_state_dict(torch.load('ted_3.pkl'))
-c = beth_coach.Coach(nn)
-c.set_iterations(110000, 30000)
+c = richard_coach.Coach(nn)
+c.set_iterations(950, 50)
 c.epochs = 3
-c.set_collection('Minutes')
+c.set_collection('Days')
 c.train()
 # torch.save(t.state_dict(), 'ted_4.pkl')
