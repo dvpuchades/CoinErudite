@@ -29,23 +29,30 @@ class Coach:
         collection = collection.find()
 
         day_list = []
+        training_collection = []
+        test_collection = []
+        i = 0
+
         for element in collection:
-            day_list.append(element)
+            i += 1
+            if (i % int(self.training_iterations / self.test_iterations)) == 0:
+                test_collection.append(element)
+            else:
+                training_collection.append(element)
+
 
         for epoch in range(self.epochs):
-            day_list_aux = day_list[: self.training_iterations]
 
-            for element in day_list[: self.training_iterations]:
-                day_list_aux.remove(element)
+            for element in training_collection:
                 d = day.from_dict(element)
                 self.nn.learn(d)
 
         test_result = 0
+        
         if (self.nn.type == 'classifier') :
-            for element in day_list[self.training_iterations : (self.training_iterations + self.test_iterations)]:
+            print(test_collection)
+            for element in test_collection:
                 d = day.from_dict(element)
-
-            
                 if(float(self.nn( d )[0][0].item()) > float(self.nn( d )[0][1].item())):
                     result = 1
                 else:

@@ -10,8 +10,8 @@ import torch
 nn = richard.Richard()
 # nn.load_state_dict(torch.load('ted_3.pkl'))
 c = richard_coach.Coach(nn)
-c.set_iterations(950, 50)
-c.epochs = 3
+c.set_iterations(4300, 1000)
+c.epochs = 7
 c.set_collection('Days')
 c.train()
 # torch.save(t.state_dict(), 'ted_4.pkl')

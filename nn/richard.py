@@ -50,14 +50,14 @@ class Richard(nn.Module):
         reddit_average_comments_48h = input_day.reddit_average_comments_48h / 100000
         i.append(reddit_average_comments_48h)
 
-        alexa_rank = input_day.alexa_rank / 10000
+        alexa_rank = input_day.alexa_rank / 100000
         i.append(alexa_rank)
 
-        p0_avg = (input_day.price_list[0] / input_day.average_90) * 0.1
-        p1_avg = (input_day.price_list[1] / input_day.average_90) * 0.1
-        p2_avg = (input_day.price_list[2] / input_day.average_90) * 0.1
-        p3_avg = (input_day.price_list[3] / input_day.average_90) * 0.1
-        p4_avg = (input_day.price_list[4] / input_day.average_90) * 0.1
+        p0_avg = (input_day.price_list[0] / input_day.average_90) * 0.01
+        p1_avg = (input_day.price_list[1] / input_day.average_90) * 0.01
+        p2_avg = (input_day.price_list[2] / input_day.average_90) * 0.01
+        p3_avg = (input_day.price_list[3] / input_day.average_90) * 0.01
+        p4_avg = (input_day.price_list[4] / input_day.average_90) * 0.01
 
         i.append(p0_avg)
         i.append(p1_avg)
@@ -93,16 +93,22 @@ class Richard(nn.Module):
         else:
             i.append(0)
 
-        increase_p0 = (input_day.price_list[4]/input_day.price_list[0]) * 0.1
+        increase_p0 = (input_day.price_list[4]/input_day.price_list[0]) * 0.01
         i.append(increase_p0)
 
-        increase_15 = (input_day.average_15 / input_day.average_90) * 0.1
+        increase_15 = (input_day.average_15 / input_day.average_90) * 0.01
         i.append(increase_15)
 
-        increase_30 = (input_day.average_30 / input_day.average_90) * 0.1
+        increase_30 = (input_day.average_30 / input_day.average_90) * 0.01
         i.append(increase_30)
 
         i.append(always_increase(input_day.price_list))
+
+        for e in i:
+            if (e > 1) or (e < 0):
+                print('ERROR:')
+                print(e)
+                print(i)
 
         i = torch.tensor([i, i])
 
@@ -138,7 +144,7 @@ def always_increase(price_list):
     x = 4
     while (increase & x > 0):
         if(price_list[x] >= price_list[x - 1]):
-            ret += 0.25
+            ret += 0.01
         else:
             increase = False
     return ret

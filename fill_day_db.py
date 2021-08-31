@@ -45,7 +45,7 @@ for p in product:
     day = '30-8-2021'
 
     data_list = []
-    for i in range(1500):
+    for i in range(1350):
         try:
             data = cg.get_coin_history_by_id(id=p, date=day)
             data_list.append([day, data])
@@ -113,5 +113,7 @@ for p in product:
         except requests.HTTPError as exception:
             i -= 1
             print(exception)
+            time.sleep(1)
+
 
         time.sleep(1)
