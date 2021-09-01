@@ -32,39 +32,24 @@ class Coach:
         for element in collection:
             minute_list.append(element)
 
+        print('In!')
+
         for epoch in range(self.epochs):
-            minute_list_aux = minute_list[: self.training_iterations]
-
             for element in minute_list[: self.training_iterations]:
-                minute_list_aux.remove(element)
                 m = minute.from_dict(element)
-
-                for element_aux in minute_list_aux:
-                    m_next = minute.from_dict(element_aux)
-                    if m_next.product == m.product:
-
-                        added_seconds = datetime.timedelta(0, 60)
-                        if (m.date + added_seconds) == m_next.date:
-                            self.nn.learn(m, m_next)
-                        else:
-                            break
 
         test_result = 0
         if (self.nn.type == 'classifier') :
             for element in minute_list[self.training_iterations : (self.training_iterations + self.test_iterations)]:
                 m = minute.from_dict(element)
 
-                if(float(self.nn(m)[0][0].item()) < float(self.nn(m)[0][2].item()) and float(self.nn(m)[0][1].item()) < float(self.nn(m)[0][2].item())):
-                    test_result += 0.5 / self.test_iterations
-                    print('Pred: UNSTABLE')
+                if(float(self.nn(m)[0][0].item()) > float(self.nn(m)[0][1].item())):
+                    result = 1
                 else:
-                    if(float(self.nn(m)[0][0].item()) > float(self.nn(m)[0][1].item())):
-                        result = 1
-                    else:
-                        result = 0
-                    print('Pred: ' + str(result) + '  Res:' + str(element['valoration']))
-                    if (compare(element['valoration'], result)):
-                        test_result += 1 / self.test_iterations
+                    result = 0
+                print('Pred: ' + str(result) + '  Res:' + str(element['valoration']))
+                if (compare(element['valoration'], result)):
+                    test_result += 1 / self.test_iterations
         else:
             for element in minute_list[self.training_iterations : (self.training_iterations + self.test_iterations)]:
                 m = minute.from_dict(element)

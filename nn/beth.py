@@ -16,9 +16,9 @@ class Beth(nn.Module):
     def __init__(self):
         super(Beth,self).__init__()
         self.type = 'classifier'
-        self.input_layer = nn.Linear(22, 150)
+        self.input_layer = nn.Linear(20, 150)
         self.hidden_layer = nn.Linear(150,25)
-        self.output_layer = nn.Linear(25,3)
+        self.output_layer = nn.Linear(25,2)
         self.activation = nn.ReLU()
 
     def forward(self, input_minute):
@@ -29,7 +29,7 @@ class Beth(nn.Module):
         return output
 
 
-    def learn(self, minute, next_minute):
+    def learn(self, minute):
         loss_function = nn.CrossEntropyLoss() #función de pérdidas
         parameters = self.parameters()
         optimizer = optim.Adam(params=parameters, lr=0.001) #algoritmo usado para optimizar los parámetros
@@ -38,30 +38,15 @@ class Beth(nn.Module):
         output = self(minute) #calcular la salida para una imagen
         self.zero_grad() #poner los gradientes a cero en cada iteración
 
-        if next_minute_unstable(next_minute):
-            target = torch.tensor([0, 0, 1])
-            print('not!')
-        elif int(minute.valoration) == 0:
-            target = torch.tensor([0, 1, 0])
+        if int(minute.valoration) == 0:
+            target = torch.tensor([0, 1])
         else:
-            target = torch.tensor([1, 0, 0])
+            target = torch.tensor([1, 0])
 
         error = loss_function(output, target) #calcular el error
         error.backward() #obtener los gradientes y propagar
         optimizer.step() #actualizar los pesos con los gradientes
         losses = np.append(losses,error.item())
-
-def is_stable(l): # 1, 3
-    trends = (l[1] + 0.001) / (l[0] + 0.001)
-    x = 0
-    while x < 4:
-        t = (l[x + 1] + 0.001) / (l[x] + 0.001)
-        if (trends > 0) and (t < 0):
-            return 0
-        if (trends < 0) and (t > 0):
-            return 0
-        x += 1        
-    return 1
 
 def evolution(l): # 2, 4
     return zero_div(l[4], l[0])
@@ -123,10 +108,8 @@ def average_10_from_average_15(m): #22
 def input_list_from_minute(m): # (ALL)
     input = []
 
-    input.append(is_stable(m.minute_list))
     input.append(evolution(m.minute_list))
 
-    input.append(is_stable(m.operation_list))
     input.append(evolution(m.operation_list))
 
     input.append(price_evolution_from_average(m))
