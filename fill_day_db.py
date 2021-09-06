@@ -42,7 +42,7 @@ product = ['bitcoin', 'ethereum', 'ripple', 'binancecoin', 'polkadot', 'litecoin
 
 for p in product:
     print(p)
-    day = '30-8-2021'
+    day = '06-09-2021'
 
     data_list = []
     for i in range(1350):
